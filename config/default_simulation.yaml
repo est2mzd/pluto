@@ -1,3 +1,6 @@
+# TODO
+output_dir: /root/nuplan/exp/exp/simulation/pluto_test
+
 hydra:
   run:
     dir: ${output_dir}
@@ -23,7 +26,7 @@ defaults:
       - time_callback
       - metric_file_callback
       - metric_aggregator_callback
-      - metric_summary_callback
+      # - metric_summary_callback # TODO. bokeh is ver 3.x, but nuplan uses ver 2.x
   - splitter: nuplan
 
   # Hyperparameters need to be specified

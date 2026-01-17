@@ -1,0 +1,139 @@
+# Dockerイメージビルド時に除外するファイル・ディレクトリ
+# 根拠: ビルド時間の短縮とイメージサイズの削減のため
+
+# Gitリポジトリ情報（不要なメタデータ）
+.git
+.gitignore
+.gitattributes
+
+# Python関連
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 仮想環境（コンテナ内で再構築するため）
+venv/
+env/
+ENV/
+.venv
+
+# IDE設定ファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 実験結果やキャッシュ（ボリュームマウントで共有するため）
+checkpoints/
+*.ckpt
+*.pth
+*.pt
+logs/
+wandb/
+outputs/
+
+# データファイル（ボリュームマウントで共有するため）
+data/
+*.db
+*.cache
+
+# Dockerイメージビルド時に除外するファイル・ディレクトリ
+# 根拠: ビルド時間の短縮とイメージサイズの削減のため
+# ビルドコンテキスト: プロジェクトルート
+
+# Gitリポジトリ情報（不要なメタデータ）
+.git
+.gitignore
+.gitattributes
+
+# Docker関連（docker/ ディレクトリ全体は除外）
+docker/
+
+# Python関連
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 仮想環境（コンテナ内で再構築するため）
+venv/
+env/
+ENV/
+.venv
+
+# IDE設定ファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 実験結果やキャッシュ（ボリュームマウントで共有するため）
+checkpoints/
+*.ckpt
+*.pth
+*.pt
+logs/
+wandb/
+outputs/
+
+# データファイル（ボリュームマウントで共有するため）
+data/
+*.db
+*.cache
+
+# その他の大容量ファイル
+*.mp4
+*.avi
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# ドキュメント（必要に応じてコメントアウト）
+# README.md
+# docs/
+
+# テスト関連
+.pytest_cache/
+.coverage
+htmlcov/
+
+# その他の大容量ファイル
+*.mp4
+*.avi
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# ドキュメント（必要に応じてコメントアウト）
+# README.md
+# docs/
+
+# テスト関連
+.pytest_cache/
+.coverage
+htmlcov/

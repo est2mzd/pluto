@@ -55,7 +55,7 @@ class TransformerEncoderLayer(nn.Module):
         self.attn = torch.nn.MultiheadAttention(
             dim,
             num_heads=num_heads,
-            add_bias_kv=qkv_bias,
+            # add_bias_kv=qkv_bias, # TODO: PyTorchのMultiheadAttentionにはadd_bias_kvオプションがないためコメントアウト
             dropout=attn_drop,
             batch_first=True,
         )

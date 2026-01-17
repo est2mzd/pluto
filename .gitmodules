@@ -1,0 +1,3 @@
+[submodule "nuplan-devkit"]
+	path = nuplan-devkit
+	url = git@github.com:est2mzd/nuplan-devkit.git

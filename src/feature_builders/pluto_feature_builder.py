@@ -391,7 +391,10 @@ class PlutoFeatureBuilder(AbstractFeatureBuilder):
         velocity = np.zeros((T, 2), dtype=np.float64)
         acceleration = np.zeros((T, 2), dtype=np.float64)
         shape = np.zeros((T, 2), dtype=np.float64)
-        valid_mask = np.ones(T, dtype=np.bool)
+        
+        # TODO. Deprecated np.bool
+        # valid_mask = np.ones(T, dtype=np.bool)
+        valid_mask = np.ones(T, dtype=np.bool_)
 
         for t, state in enumerate(ego_states):
             position[t] = state.rear_axle.array
@@ -437,7 +440,11 @@ class PlutoFeatureBuilder(AbstractFeatureBuilder):
         velocity = np.zeros((N, T, 2), dtype=np.float64)
         shape = np.zeros((N, T, 2), dtype=np.float64)
         category = np.zeros((N,), dtype=np.int8)
-        valid_mask = np.zeros((N, T), dtype=np.bool)
+        
+        # TODO. Deprecated np.bool
+        # valid_mask = np.zeros((N, T), dtype=np.bool)
+        valid_mask = np.zeros((N, T), dtype=np.bool_)
+        
         polygon = [None] * N
 
         if N == 0 or self.disable_agent:
@@ -520,10 +527,16 @@ class PlutoFeatureBuilder(AbstractFeatureBuilder):
 
         if len(static_objects) > 0:
             static_objects = np.stack(static_objects, axis=0)
-            valid_mask = np.ones(len(static_objects), dtype=np.bool)
+            
+            # TODO. Deprecated np.bool
+            # valid_mask = np.ones(len(static_objects), dtype=np.bool)
+            valid_mask = np.ones(len(static_objects), dtype=np.bool_)
         else:
             static_objects = np.zeros((0, 6), dtype=np.float64)
-            valid_mask = np.zeros(0, dtype=np.bool)
+            
+            # TODO. Deprecated np.bool
+            # valid_mask = np.zeros(0, dtype=np.bool)
+            valid_mask = np.zeros(0, dtype=np.bool_)
 
         return {
             "position": static_objects[:, :2],
@@ -578,10 +591,18 @@ class PlutoFeatureBuilder(AbstractFeatureBuilder):
         polygon_position = np.zeros((M, 2), dtype=np.float64)
         polygon_orientation = np.zeros(M, dtype=np.float64)
         polygon_type = np.zeros(M, dtype=np.int8)
-        polygon_on_route = np.zeros(M, dtype=np.bool)
+        
+        # TODO. Deprecated np.bool
+        # polygon_on_route = np.zeros(M, dtype=np.bool)
+        polygon_on_route = np.zeros(M, dtype=np.bool_)
+        
         polygon_tl_status = np.zeros(M, dtype=np.int8)
         polygon_speed_limit = np.zeros(M, dtype=np.float64)
-        polygon_has_speed_limit = np.zeros(M, dtype=np.bool)
+        
+        # TODO. Deprecated np.bool
+        # polygon_has_speed_limit = np.zeros(M, dtype=np.bool)
+        polygon_has_speed_limit = np.zeros(M, dtype=np.bool_)
+        
         polygon_road_block_id = np.zeros(M, dtype=np.int32)
 
         for lane in lane_objects:
@@ -677,7 +698,11 @@ class PlutoFeatureBuilder(AbstractFeatureBuilder):
         position = np.zeros((len(reference_lines), n_points, 2), dtype=np.float64)
         vector = np.zeros((len(reference_lines), n_points, 2), dtype=np.float64)
         orientation = np.zeros((len(reference_lines), n_points), dtype=np.float64)
-        valid_mask = np.zeros((len(reference_lines), n_points), dtype=np.bool)
+        
+        # TODO. Deprecated np.bool
+        # valid_mask = np.zeros((len(reference_lines), n_points), dtype=np.bool)
+        valid_mask = np.zeros((len(reference_lines), n_points), dtype=np.bool_)
+        
         future_projection = np.zeros((len(reference_lines), 8, 2), dtype=np.float64)
 
         ego_future = ego_features["position"][self.history_samples + 1 :]

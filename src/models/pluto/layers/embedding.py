@@ -1,7 +1,14 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from natten import NeighborhoodAttention1D
+
+# TODO : nattenがインストールされていない場合のフォールバック実装を追加
+try:
+    from natten import NeighborhoodAttention1D
+    USE_NATTEN = True
+except ImportError:
+    USE_NATTEN = False
+
 from timm.models.layers import DropPath
 
 
@@ -166,17 +173,26 @@ class NATLayer(nn.Module):
         self.mlp_ratio = mlp_ratio
 
         self.norm1 = norm_layer(dim)
-        self.attn = NeighborhoodAttention1D(
-            dim,
-            kernel_size=kernel_size,
-            dilation=dilation,
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=drop,
-        )
-
+        
+        # TODO : nattenがインストールされていない場合のフォールバック実装を追加
+        if USE_NATTEN:
+            self.attn = NeighborhoodAttention1D(
+                dim,
+                kernel_size=kernel_size,
+                dilation=dilation,
+                num_heads=num_heads,
+                qkv_bias=qkv_bias,
+                qk_scale=qk_scale,
+                attn_drop=attn_drop,
+                proj_drop=drop,
+            )
+        else:
+            self.attn = nn.MultiheadAttention(
+                embed_dim=dim,
+                num_heads=num_heads,
+                batch_first=True,
+            )
+            
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim)
         self.mlp = Mlp(
@@ -189,7 +205,13 @@ class NATLayer(nn.Module):
     def forward(self, x):
         shortcut = x
         x = self.norm1(x)
-        x = self.attn(x)
+        
+        # TODO : nattenがインストールされていない場合のフォールバック実装を追加
+        if USE_NATTEN:
+            x = self.attn(x)
+        else:
+            x, _ = self.attn(x, x, x)
+            
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x

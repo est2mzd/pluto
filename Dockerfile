@@ -39,10 +39,9 @@ RUN apt-get update && apt-get install -y \
 RUN conda create -n pluto python=3.9 -y
 
 # nuplan-devkitのインストール
-# 根拠: README.mdのSetup手順に記載されている必須コンポーネント
-# ローカルのnuplan-devkitをコピー（修正済みrequirements.txtを内包）
-# ビルドコンテキスト: プロジェクトルート（COPY パスは相対）
-COPY nuplan-devkit /workspace/nuplan-devkit
+RUN cd /workspace && git clone https://github.com/est2mzd/nuplan-devkit.git
+RUN cd /workspace/nuplan-devkit && git checkout feature/pluto
+RUN cd /workspace/nuplan-devkit && git pull
 
 # setup.pyをインストール（editable mode）
 # 根拠: README.mdの手順順序に従い、setup.py → requirements.txt の順
@@ -58,32 +57,19 @@ RUN /opt/conda/bin/conda run -n pluto pip install --no-cache-dir --prefer-binary
 # 根拠: キャッシュ効率のためにrequirements.txtを先にコピーしてインストール
 # conda pluto環境内で実行
 WORKDIR /workspace/pluto
-COPY requirements.txt .
-RUN /opt/conda/bin/conda run -n pluto pip install --no-cache-dir --prefer-binary -r requirements.txt
+COPY requirements.txt /tmp/pluto_requirements.txt
+RUN /opt/conda/bin/conda run -n pluto pip install --no-cache-dir --prefer-binary -r /tmp/pluto_requirements.txt
 
-# PLUTOプロジェクトのソースコードをコピー
-# 根拠: ファイル・ディレクトリを明示的に指定（.dockerignoreで管理）
-# 重複を排除し、必要なファイルのみコピー
-COPY README.md .
-COPY config ./config
-COPY script ./script
-COPY src ./src
-COPY run_simulation.py .
-COPY run_training.py .
+# setup_env.sh は不要
+# COPY script/setup_env.sh /tmp/pluto_setup_env.sh
+# RUN /opt/conda/bin/conda run -n pluto bash -c "sh /tmp/pluto_setup_env.sh"
 
-# setup_env.sh を実行
-# 根拠: README.md の最後のステップ "sh ./script/setup_env.sh"
-RUN /opt/conda/bin/conda run -n pluto bash -c "cd /workspace/pluto && sh ./script/setup_env.sh"
-
-# PYTHONPATHを設定
-# 根拠: README.mdでexport PYTHONPATH=$PYTHONPATH:$(pwd)が使用されている
-ENV PYTHONPATH="/workspace/pluto:${PYTHONPATH}"
-
-# nuPlan データセットの環境変数を設定
-# 根拠: nuplan-devkit が這些環境変数を使用して、maps と data を検索
-# dataset配下に統合されたため、パスを修正
+# 環境変数を追加設定
+ENV PYTHONPATH="/workspace:${PYTHONPATH}"
 ENV NUPLAN_MAPS_ROOT="/nuplan/dataset/maps"
 ENV NUPLAN_DATA_ROOT="/nuplan/dataset"
+ENV WANDB_DIR="/workspace/exp"
+ENV PATH="/opt/conda/envs/pluto/bin:$PATH"
 
 # conda pluto環境を有効化
 # 根拠: PATH を設定することで、python コマンドが常にpluto環境を使用される
@@ -95,7 +81,7 @@ RUN /opt/conda/bin/conda init bash && \
     echo "conda activate pluto" >> /root/.bashrc
 
 # 作業ディレクトリをplutoプロジェクトに設定
-WORKDIR /workspace/pluto
+WORKDIR /workspace
 
 # デフォルトコマンド: bashシェルを起動
 CMD ["/bin/bash"]

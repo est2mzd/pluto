@@ -21,7 +21,7 @@ from .modules.planning_decoder import PlanningDecoder
 from .layers.mlp_layer import MLPLayer
 
 # no meaning, required by nuplan
-trajectory_sampling = TrajectorySampling(num_poses=8, time_horizon=8, interval_length=1)
+trajectory_sampling = TrajectorySampling(num_poses=80, time_horizon=8, interval_length=0.1)
 
 
 class PlanningModel(TorchModuleWrapper):

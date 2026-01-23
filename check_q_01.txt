@@ -1,0 +1,59 @@
+   130	        self.pi_head = MLPLayer(dim, dim, 1)
+   131	
+   132	        nn.init.normal_(self.m_emb, mean=0.0, std=0.01)
+   133	        nn.init.normal_(self.m_pos, mean=0.0, std=0.01)
+   134	
+   135	    def forward(self, data, enc_data):
+   136	        enc_emb = enc_data["enc_emb"]
+   137	        enc_key_padding_mask = enc_data["enc_key_padding_mask"]
+   138	
+   139	        r_position = data["reference_line"]["position"]
+   140	        r_vector = data["reference_line"]["vector"]
+   141	        r_orientation = data["reference_line"]["orientation"]
+   142	        r_valid_mask = data["reference_line"]["valid_mask"]
+   143	        r_key_padding_mask = ~r_valid_mask.any(-1)
+   144	
+   145	        r_feature = torch.cat(
+   146	            [
+   147	                r_position - r_position[..., 0:1, :2],
+   148	                r_vector,
+   149	                torch.stack([r_orientation.cos(), r_orientation.sin()], dim=-1),
+   150	            ],
+   151	            dim=-1,
+   152	        )
+   153	
+   154	        bs, R, P, C = r_feature.shape
+   155	        r_valid_mask = r_valid_mask.view(bs * R, P)
+   156	        r_feature = r_feature.reshape(bs * R, P, C)
+   157	        r_emb = self.r_encoder(r_feature, r_valid_mask).view(bs, R, -1)
+   158	
+   159	        r_pos = torch.cat([r_position[:, :, 0], r_orientation[:, :, 0, None]], dim=-1)
+   160	        r_emb = r_emb + self.r_pos_emb(r_pos)
+   161	
+   162	        r_emb = r_emb.unsqueeze(2).repeat(1, 1, self.num_mode, 1)
+   163	        m_emb = self.m_emb.repeat(bs, R, 1, 1)
+   164	
+   165	        q = self.q_proj(torch.cat([r_emb, m_emb], dim=-1))
+   166	
+   167	        for blk in self.decoder_blocks:
+   168	            q = blk(
+   169	                q,
+   170	                enc_emb,
+   171	                tgt_key_padding_mask=r_key_padding_mask,
+   172	                memory_key_padding_mask=enc_key_padding_mask,
+   173	                m_pos=self.m_pos,
+   174	            )
+   175	            assert torch.isfinite(q).all()
+   176	
+   177	        if self.cat_x:
+   178	            x = enc_emb[:, 0].unsqueeze(1).unsqueeze(2).repeat(1, R, self.num_mode, 1)
+   179	            q = self.cat_x_proj(torch.cat([q, x], dim=-1))
+   180	
+   181	        loc = self.loc_head(q).view(bs, R, self.num_mode, self.future_steps, 2)
+   182	        yaw = self.yaw_head(q).view(bs, R, self.num_mode, self.future_steps, 2)
+   183	        vel = self.vel_head(q).view(bs, R, self.num_mode, self.future_steps, 2)
+   184	        pi = self.pi_head(q).squeeze(-1)
+   185	
+   186	        traj = torch.cat([loc, yaw, vel], dim=-1)
+   187	
+   188	        return traj, pi

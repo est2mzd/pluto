@@ -13,12 +13,13 @@ def to_tensor(data):
     if isinstance(data, dict):
         return {k: to_tensor(v) for k, v in data.items()}
     elif isinstance(data, numpy.ndarray):
+        # Use torch.tensor to avoid strict numpy ABI/type coupling
         if data.dtype == numpy.float64:
-            return torch.from_numpy(data).float()
+            return torch.tensor(data, dtype=torch.float32)
         else:
-            return torch.from_numpy(data)
+            return torch.tensor(data)
     elif isinstance(data, numpy.number):
-        return torch.tensor(data).float()
+        return torch.tensor(float(data), dtype=torch.float32)
     elif isinstance(data, list):
         return data
     elif isinstance(data, int):

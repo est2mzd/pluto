@@ -1,0 +1,36 @@
+distributed_training:
+  equal_variance_scaling_strategy: true
+
+trainer:
+  checkpoint:
+    resume_training: false
+    save_top_k: 5
+    monitor: loss/val_loss
+    mode: min
+
+  params:
+    max_epochs: ${epochs}
+    val_check_interval: 1.0
+
+    limit_train_batches:
+    limit_val_batches:
+    limit_test_batches:
+
+    devices: 1  # CPU uses 1 device
+    accelerator: cpu  # CPU mode
+    precision: 32
+
+    num_sanity_val_steps: 1
+    fast_dev_run: false
+
+    gradient_clip_val: 5.0
+    gradient_clip_algorithm: norm
+    sync_batchnorm: false  # Not needed for CPU
+    # strategy is omitted for CPU (single device)
+
+  overfitting:
+    enable: false
+
+    params:
+      max_epochs: 150
+      overfit_batches: 1

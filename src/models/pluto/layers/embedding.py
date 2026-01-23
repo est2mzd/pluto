@@ -2,12 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# TODO : nattenがインストールされていない場合のフォールバック実装を追加
-try:
-    from natten import NeighborhoodAttention1D
-    USE_NATTEN = True
-except ImportError:
-    USE_NATTEN = False
+import math
+
+# TODO : nattenは、更新されておらずエラーになるため、nn.MultiheadAttentionのdropoutで代替
+# from natten import NeighborhoodAttention1D
 
 from timm.models.layers import DropPath
 
@@ -174,24 +172,29 @@ class NATLayer(nn.Module):
 
         self.norm1 = norm_layer(dim)
         
-        # TODO : nattenがインストールされていない場合のフォールバック実装を追加
-        if USE_NATTEN:
-            self.attn = NeighborhoodAttention1D(
-                dim,
-                kernel_size=kernel_size,
-                dilation=dilation,
-                num_heads=num_heads,
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                attn_drop=attn_drop,
-                proj_drop=drop,
+        # TODO: attention 出力安定化用（NaN対策）
+        # self.attn_norm = norm_layer(dim)        
+        
+        # TODO : nattenは削除
+        """
+        self.attn = NeighborhoodAttention1D(
+            dim,
+            kernel_size=kernel_size,
+            dilation=dilation,
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=drop,
             )
-        else:
-            self.attn = nn.MultiheadAttention(
-                embed_dim=dim,
-                num_heads=num_heads,
-                batch_first=True,
-            )
+        """
+        # TODO: nn.MultiheadAttentionで代替
+        self.attn = nn.MultiheadAttention(
+            embed_dim=dim,
+            num_heads=num_heads,
+            dropout=attn_drop,   # ← ★ ここが本質
+            batch_first=True,
+        )
             
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim)
@@ -206,12 +209,16 @@ class NATLayer(nn.Module):
         shortcut = x
         x = self.norm1(x)
         
-        # TODO : nattenがインストールされていない場合のフォールバック実装を追加
-        if USE_NATTEN:
-            x = self.attn(x)
-        else:
-            x, _ = self.attn(x, x, x)
-            
+        # TODO : nattenは削除
+        # x = self.attn(x)
+        x, _ = self.attn(x, x, x)
+        
+        # TODO: スケール抑制. NATの内部処理に近づける
+        # x = x / math.sqrt(self.dim)
+                
+        # TODO: NaN対策
+        # x = self.attn_norm(x)
+    
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x

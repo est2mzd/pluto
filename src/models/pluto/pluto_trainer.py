@@ -101,6 +101,16 @@ class LightningTrainer(pl.LightningModule):
         features, targets, scenarios = batch
         res = self.forward(features["feature"].data)
 
+        # Sanitize model outputs to avoid NaN/Inf propagation
+        def _sanitize(t: torch.Tensor) -> torch.Tensor:
+            if isinstance(t, torch.Tensor):
+                return torch.nan_to_num(t, nan=0.0, posinf=1e6, neginf=-1e6)
+            return t
+
+        for key in ["trajectory", "probability", "prediction"]:
+            if key in res:
+                res[key] = _sanitize(res[key])
+
         losses = self._compute_objectives(res, features["feature"].data)
         metrics = self._compute_metrics(res, features["feature"].data, prefix)
         self._log_step(losses["loss"], losses, metrics, prefix)
@@ -190,6 +200,10 @@ class LightningTrainer(pl.LightningModule):
         valid_mask: (bs, A-1, T)
         target: (bs, A-1, 6)
         """
+        # Sanitize tensors
+        prediction = torch.nan_to_num(prediction, nan=0.0, posinf=1e6, neginf=-1e6)
+        target = torch.nan_to_num(target, nan=0.0, posinf=1e6, neginf=-1e6)
+
         prediction_loss = F.smooth_l1_loss(
             prediction[valid_mask], target[valid_mask], reduction="none"
         ).sum(-1)
@@ -222,6 +236,10 @@ class LightningTrainer(pl.LightningModule):
 
         best_trajectory = trajectory[torch.arange(bs), target_r_index, target_m_index]
 
+        # Sanitize tensors
+        best_trajectory = torch.nan_to_num(best_trajectory, nan=0.0, posinf=1e6, neginf=-1e6)
+        target = torch.nan_to_num(target, nan=0.0, posinf=1e6, neginf=-1e6)
+
         if self.use_collision_loss:
             collision_loss = self.collision_loss(
                 best_trajectory, data["cost_maps"][:bs, :, :, 0].float()
@@ -232,7 +250,8 @@ class LightningTrainer(pl.LightningModule):
         reg_loss = F.smooth_l1_loss(best_trajectory, target, reduction="none").sum(-1)
         reg_loss = (reg_loss * valid_mask).sum() / valid_mask.sum()
 
-        probability.masked_fill_(r_padding_mask.unsqueeze(-1), -1e6)
+        probability = torch.nan_to_num(probability, nan=0.0, posinf=1e6, neginf=-1e6)
+        probability = probability.masked_fill(r_padding_mask.unsqueeze(-1), -1e6)
 
         cls_loss = F.cross_entropy(
             probability.reshape(bs, -1), target_label.reshape(bs, -1).detach()
@@ -288,7 +307,11 @@ class LightningTrainer(pl.LightningModule):
         # get top 6 modes
         trajectory, probability = res["trajectory"], res["probability"]
         r_padding_mask = ~data["reference_line"]["valid_mask"].any(-1)
-        probability.masked_fill_(r_padding_mask.unsqueeze(-1), -1e6)
+        probability = probability.masked_fill(r_padding_mask.unsqueeze(-1), -1e6)
+
+        # Additional sanitization before metrics
+        trajectory = torch.nan_to_num(trajectory, nan=0.0, posinf=1e6, neginf=-1e6)
+        probability = torch.nan_to_num(probability, nan=0.0, posinf=1e6, neginf=-1e6)
 
         bs, R, M, T, _ = trajectory.shape
         trajectory = trajectory.reshape(bs, R * M, T, -1)
@@ -305,6 +328,8 @@ class LightningTrainer(pl.LightningModule):
         }
         target = data["agent"]["target"][:, 0]
 
+        # Ensure targets are finite
+        target = torch.nan_to_num(target, nan=0.0, posinf=1e6, neginf=-1e6)
         metrics = self.metrics[prefix](outputs, target)
         return metrics
 

@@ -6,17 +6,80 @@ PLUTOのトレーニングは2段階に分かれています：
 
 ---
 
-## 1. Sanity Check（Feature Cache）
+## 1. Mini data
 
-### コマンド
+### 1.1. キャッシュ作成 for mini
+- splietter: ./nuplan-devkit/nuplan/planning/script/config/common/splitter/
+- scenario_builder: ./nuplan-devkit/nuplan/planning/script/config/common/scenario_builder/
+
 ```bash
 python run_training.py \
-   py_func=cache +training=train_pluto \
+    py_func=cache  \
+    +training=train_pluto \
+    scenario_builder=nuplan_mini \
+    scenario_filter=training_scenarios_tiny \
+    cache.cache_path=/nuplan/exp/sanity_check \
+    cache.cleanup_cache=true \
+    worker=sequential
+```
+
+### 1.2. 学習 for mini
+```bash
+python run_training.py \
+    py_func=train \
+    +training=train_pluto \
+    scenario_builder=nuplan_mini \
+    scenario_filter=training_scenarios_tiny \
+    cache.cache_path=/nuplan/exp/sanity_check \
+    worker=sequential
+```
+
+
+
+
+python run_training.py
+  py_func=cache +training=train_pluto
+  scenario_builder=nuplan_mini
+  scenario_filter=training_scenarios_tiny
+  cache.cache_path=/nuplan/exp/sanity_check
+  cache.cleanup_cache=true
+  worker=sequential
+
+
+## 2. Boston data
+
+### 2.1. キャッシュ作成 for Boston
+```bash
+python run_training.py \
+   py_func=cache \
+   +training=train_pluto \
    scenario_builder=nuplan_mini \
+   scenario_filter=training_scenarios_tiny \
    cache.cache_path=/nuplan/exp/sanity_check \
    cache.cleanup_cache=true \
-   scenario_filter=training_scenarios_tiny \
    worker=sequential
+```
+
+### 2.2. 学習 for Boston
+```bash
+python run_training.py \
+  py_func=train \
+  +training=train_pluto \
+  scenario_builder=nuplan_mini \
+  scenario_filter=training_scenarios_tiny \
+  cache.cache_path=/nuplan/exp/sanity_check \
+  worker=sequential
+```
+
+```bash
+python run_training.py \
+  py_func=train \
+  +training=train_pluto \
+  splitter=nuplan_boston \
+  scenario_builder=nuplan_boston \
+  scenario_filter=training_scenarios_boston \
+  cache.cache_path=/nuplan/exp/cache_boston \
+  worker=sequential
 ```
 
 ### 各引数の説明と根拠
@@ -37,16 +100,31 @@ python run_training.py \
 
 ## 2. 本体 Training
 
-### コマンド
-```bash
-python run_training.py \
-  py_func=train \
-  +training=train_pluto \
-  scenario_builder=nuplan_mini \
-  scenario_filter=training_scenarios_tiny \
-  cache.cache_path=/nuplan/exp/sanity_check \
-  worker=sequential
+### コマンド : mini
+
+
+### コマンド : boston
+- splietter: ./nuplan-devkit/nuplan/planning/script/config/common/splitter/nuplan_boston.yaml
+- scenario_builder: ./nuplan-devkit/nuplan/planning/script/config/common/scenario_builder/nuplan_boston.yaml
+
+
+
+
+### Hydra の デバッグ方法
+- 「Hydra が最終的に作った設定の完成形をそのまま表示する」ための公式デバッグ手段です
 ```
+python run_training.py --cfg job
+```
+
+
+
+
+
+
+
+
+
+
 
 ## 3. Simulation
 - pluto_1M_aux_cil.ckpt は READMEにリンクがある

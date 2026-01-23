@@ -1,0 +1,7 @@
+_target_: pluto.src.custom_training.ratio_splitter.RatioSplitter
+_convert_: 'all'
+
+train_ratio: 0.7   # 70% for training
+val_ratio: 0.2     # 20% for validation
+test_ratio: 0.1    # 10% for testing
+seed: 0            # Random seed for reproducibility

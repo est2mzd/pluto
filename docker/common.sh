@@ -15,7 +15,7 @@ CONTAINER_NAME="pluto_container"
 # nuPlanデータセットのパス設定
 # ホスト側のパスを指定（コンテナ内では /nuplan にマウントされる）
 # 根拠: start.sh で -v "$NUPLAN_DATA_ROOT:/nuplan" でマウントされる
-NUPLAN_DATA_ROOT="${NUPLAN_DATA_ROOT:-/media/takuya/Transcend/work/nuPlan}"
+NUPLAN_DATA_ROOT="${NUPLAN_DATA_ROOT:-/mnt/usb-hdd-01/nuPlan}"
 
 # 共有メモリサイズの設定
 # 根拠: PyTorchのDataLoaderで複数workerを使用する際に必要

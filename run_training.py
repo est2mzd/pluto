@@ -3,6 +3,13 @@ from typing import Optional
 
 import hydra
 import numpy
+
+# Backward-compat aliases for NumPy 2.0 removal (used by PL/WandB)
+if not hasattr(numpy, "Inf"):
+    numpy.Inf = numpy.inf
+if not hasattr(numpy, "float_"):
+    numpy.float_ = numpy.float64
+
 import pytorch_lightning as pl
 from nuplan.planning.script.builders.folder_builder import (
     build_training_experiment_folder,

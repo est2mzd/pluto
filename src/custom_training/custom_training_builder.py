@@ -33,7 +33,6 @@ from pytorch_lightning.callbacks import (
     RichProgressBar,
 )
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
-from pytorch_lightning.loggers.wandb import WandbLogger
 
 from .custom_datamodule import CustomDataModule
 
@@ -208,6 +207,8 @@ def build_custom_trainer(cfg: DictConfig) -> pl.Trainer:
             prefix="",
         )
     else:
+        # Import WandbLogger lazily only when enabled to avoid importing wandb
+        from pytorch_lightning.loggers.wandb import WandbLogger
         if cfg.wandb.artifact is not None:
             os.system(f"wandb artifact get {cfg.wandb.artifact}")
             _, _, artifact = cfg.wandb.artifact.split("/")

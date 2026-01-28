@@ -29,7 +29,7 @@ trainer:
     # auto_lr_find: false  # tunes LR before beginning training
     # terminate_on_nan: true  # terminates training if a nan is encountered in loss/weights
 
-    num_sanity_val_steps: 1  # number of validation steps to run before training begins
+    num_sanity_val_steps: 0  # number of validation steps to run before training begins (disabled to avoid empty batch issues)
     fast_dev_run: false  # runs 1 batch of train/val/test for sanity
 
     # accumulate_grad_batches: 1  # accumulates gradients every n batches

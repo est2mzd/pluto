@@ -125,6 +125,9 @@ class PlanningModel(TorchModuleWrapper):
             nn.init.normal_(m.weight, mean=0.0, std=0.02)
 
     def forward(self, data):
+        # Accept both raw feature dicts and {"feature": PlutoFeature} style batches
+        if isinstance(data, dict) and "feature" in data and hasattr(data["feature"], "data"):
+            data = data["feature"].data
         agent_pos = data["agent"]["position"][:, :, self.history_steps - 1]
         agent_heading = data["agent"]["heading"][:, :, self.history_steps - 1]
         agent_mask = data["agent"]["valid_mask"][:, :, : self.history_steps]

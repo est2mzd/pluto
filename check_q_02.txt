@@ -1,3 +1,0 @@
-165:        q = self.q_proj(torch.cat([r_emb, m_emb], dim=-1))
-168:            q = blk(
-179:            q = self.cat_x_proj(torch.cat([q, x], dim=-1))

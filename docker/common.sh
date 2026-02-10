@@ -10,12 +10,12 @@ IMAGE_TAG="latest"
 
 # Dockerコンテナの設定
 # 根拠: コンテナ名を統一することで、複数のスクリプトから同じコンテナを操作可能
-CONTAINER_NAME="pluto_container"
+CONTAINER_NAME="${IMAGE_NAME}_${HOSTNAME}"
 
 # nuPlanデータセットのパス設定
 # ホスト側のパスを指定（コンテナ内では /nuplan にマウントされる）
 # 根拠: start.sh で -v "$NUPLAN_DATA_ROOT:/nuplan" でマウントされる
-NUPLAN_DATA_ROOT="${NUPLAN_DATA_ROOT:-/mnt/usb-hdd-01/nuPlan}"
+NUPLAN_DATA_ROOT="${NUPLAN_DATA_ROOT:-/data/nuplan}"
 
 # 共有メモリサイズの設定
 # 根拠: PyTorchのDataLoaderで複数workerを使用する際に必要

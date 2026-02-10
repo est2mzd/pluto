@@ -13,6 +13,12 @@ ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Tokyo
 
+# ==============================
+# User settings
+# ==============================
+ARG WANDB_API_KEY
+
+
 # システムパッケージの更新とインストール
 # git: nuplan-devkitのクローンに必要
 # wget, curl: ファイルのダウンロードに必要
@@ -68,8 +74,10 @@ RUN /opt/conda/bin/conda run -n pluto pip install --no-cache-dir --prefer-binary
 ENV PYTHONPATH="/workspace:${PYTHONPATH}"
 ENV NUPLAN_MAPS_ROOT="/nuplan/dataset/maps"
 ENV NUPLAN_DATA_ROOT="/nuplan/dataset"
-ENV WANDB_DIR="/workspace/exp"
 ENV PATH="/opt/conda/envs/pluto/bin:$PATH"
+
+ENV WANDB_API_KEY=${WANDB_API_KEY}
+ENV WANDB_DIR="/workspace/pluto"
 
 # conda pluto環境を有効化
 # 根拠: PATH を設定することで、python コマンドが常にpluto環境を使用される

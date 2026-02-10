@@ -60,6 +60,7 @@ fi
 # --rm: コンテナ停止時に自動削除（オプション、必要に応じて削除）
 docker run \
     --gpus all \
+    --network host \
     --name "$CONTAINER_NAME" \
     -v "$PROJECT_ROOT:/workspace/pluto" \
     -v "$NUPLAN_DATA_ROOT:/nuplan" \

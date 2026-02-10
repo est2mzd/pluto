@@ -38,6 +38,7 @@ echo "Dockerイメージをビルド中..."
 docker build \
     --tag "$IMAGE_NAME:$IMAGE_TAG" \
     --file "$DOCKERFILE_PATH" \
+    --build-arg WANDB_API_KEY=${WANDB_API_KEY} \
     "$PROJECT_ROOT"
 
 # ビルド成功を確認

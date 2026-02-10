@@ -162,7 +162,9 @@ wandb/
 outputs/
 *.ckpt
 checkpoints/
+tensorboard/
 
 backup/
 **backup**
 exp/
+ckpt/
